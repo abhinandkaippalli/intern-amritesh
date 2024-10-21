@@ -22,6 +22,7 @@ app.get("/", (req, res) => {
   res.json({ data: "hlo" });
 });
 
+//signup
 app.post("/create-account",async(req,res)=>{
   const{fullName,email,password}=req.body;
 
@@ -58,6 +59,37 @@ app.post("/create-account",async(req,res)=>{
     user,
     accessToken,
     message:"Registration Successful",
+  });
+});
+
+//login
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+  if (!password) {
+    return res.status(400).json({ message: "Password is required" });
+  }
+
+  const userInfo = await User.findOne({ email: email });
+  if (!userInfo) {
+    return res.status(400).json({ message: "User not found" });
+  }
+
+  if (password !== userInfo.password) {
+    return res.status(400).json({ message: "Invalid password" });
+  }
+
+  const accessToken = jwt.sign({ user: userInfo }, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: "30m",
+  });
+
+  return res.json({
+    error: false,
+    user: userInfo,
+    accessToken,
+    message: "Login successful",
   });
 });
 
