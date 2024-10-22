@@ -1,9 +1,11 @@
 require("dotenv").config();
-
+const cors = require("cors");
 const config = require("./config.json");
 const mongoose = require("mongoose");
 
+
 mongoose.connect(config.connectionString);
+const bcrypt = require("bcryptjs");
 
 const User = require("./models/user.model");
 
@@ -18,6 +20,10 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.json({ data: "hlo" });
 });
+
+// Middleware
+app.use(express.json());
+app.use(cors({ origin: "*" }));
 
 //signup
 app.post("/create-account", async (req, res) => {
@@ -41,6 +47,7 @@ app.post("/create-account", async (req, res) => {
       message: "User already exist",
     });
   }
+  const hashedPassword = await bcrypt.hash(password, 10);
   const user = new User({
     fullName,
     email,
@@ -57,6 +64,8 @@ app.post("/create-account", async (req, res) => {
     message: "Registration Successful",
   });
 });
+
+
 
 //login
 app.post("/login", async (req, res) => {
