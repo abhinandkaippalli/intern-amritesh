@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import Navbar from "../../components/Navbar/Navbar";
 import { Link, useNavigate } from "react-router-dom";
 import PasswordInput from "../../components/input/PasswordInput";
-import axiosInstance from "../../utils/axiosInstance"; // Make sure to import axiosInstance
+import axiosInstance from "../../utils/axiosInstance";
 
 const SignUp = () => {
   const [name, setName] = useState("");
@@ -40,18 +39,14 @@ const SignUp = () => {
 
       // Check for errors
       if (data.error) {
-        setError(data.message); // Display error message from API
+        setError(data.message);
         return;
       }
 
-      // If successful, store the access token and navigate to the dashboard
-      if (data && data.accessToken) {
-        localStorage.setItem("token", data.accessToken);
-        navigate('/dashboard');
-      }
-
+      // Redirect to the login page after successful sign-up
+      navigate('/login');
+      
     } catch (error) {
-      // Handle any errors that occur during the API call
       if (error.response && error.response.data && error.response.data.message) {
         setError(error.response.data.message);
       } else {
@@ -62,7 +57,6 @@ const SignUp = () => {
 
   return (
     <>
-      <Navbar />
       <div className="flex items-center justify-center mt-28">
         <div className="w-96 border rounded bg-white px-7 py-10">
           <form onSubmit={handleSignUp}>
