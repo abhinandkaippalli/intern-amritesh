@@ -1,46 +1,44 @@
 import React, { useState } from "react";
-import Navbar from "../../components/Navbar/Navbar";
-import { Link, useNavigate } from "react-router-dom"; 
+import { Link,useNavigate } from "react-router-dom";
 import PasswordInput from "../../components/input/PasswordInput";
-import { validateEmail } from "../../utils/helper";
 import axiosInstance from "../../utils/axiosInstance";
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); 
   const handleLogin = async (e) => {
     e.preventDefault();
 
-   
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address.");
+    if (!email) {
+      setError("Email is required.");
+      return;
+    }
+    if (!password) {
+      setError("Password is required.");
       return;
     }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
-      return;
-    }
-
-    setError(null); 
+    setError(null);
 
     try {
- 
       const { data } = await axiosInstance.post("/login", {
         email: email,
         password: password,
       });
 
-      
+      if (data.error) {
+        setError(data.message);
+        return;
+      }
+
       if (data && data.accessToken) {
         localStorage.setItem("token", data.accessToken);
         navigate("/dashboard");
       }
     } catch (error) {
-     
       if (error.response && error.response.data && error.response.data.message) {
         setError(error.response.data.message);
       } else {
@@ -51,7 +49,6 @@ const Login = () => {
 
   return (
     <>
-      <Navbar />
       <div className="flex items-center justify-center mt-28">
         <div className="w-96 border rounded bg-white px-7 py-10">
           <form onSubmit={handleLogin}>
