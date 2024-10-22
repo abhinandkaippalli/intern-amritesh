@@ -13,7 +13,7 @@ const SignUp = () => {
   const handleSignUp = async (e) => {
     e.preventDefault();
 
-    // Form validation
+    
     if (!name) {
       setError("Name is required.");
       return;
@@ -29,7 +29,7 @@ const SignUp = () => {
 
     setError(null);
 
-    // API call to create account
+    
     try {
       const { data } = await axiosInstance.post("/create-account", {
         fullName: name,
@@ -37,13 +37,13 @@ const SignUp = () => {
         password: password,
       });
 
-      // Check for errors
+     
       if (data.error) {
         setError(data.message);
         return;
       }
 
-      // Redirect to the login page after successful sign-up
+      
       navigate('/login');
       
     } catch (error) {

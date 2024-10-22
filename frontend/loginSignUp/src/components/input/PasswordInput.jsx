@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6"; // Import eye and eye-slash icons
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6"; 
 
 const PasswordInput = ({ value, onChange, placeholder }) => {
   const [isShowPassword, setIsShowPassword] = useState(false);

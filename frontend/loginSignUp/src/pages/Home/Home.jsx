@@ -4,15 +4,15 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
 
 const Home = () => {
-  const [userInfo, setUserInfo] = useState(null); // State to store user info
+  const [userInfo, setUserInfo] = useState(null); 
   const navigate = useNavigate();
 
   const getUserInfo = async () => {
     try {
       const response = await axiosInstance.get("/get-user");
       if (response.data && response.data.user) {
-        setUserInfo(response.data.user); // Set the fetched user info
-        console.log(response.data.user); // Debugging line to ensure `userInfo` is correctly fetched
+        setUserInfo(response.data.user); 
+        console.log(response.data.user); 
       }
     } catch (error) {
       if (error.response && error.response.status === 401) {
@@ -23,12 +23,12 @@ const Home = () => {
   };
 
   useEffect(() => {
-    getUserInfo(); // Fetch the user info when the component mounts
+    getUserInfo(); 
   }, []);
 
   return (
     <>
-      <Navbar userInfo={userInfo} /> {/* Passing userInfo to Navbar */}
+      <Navbar userInfo={userInfo} /> 
       
       <div className="container mx-auto mt-8">
         {/* Display user's full name as a heading if userInfo is available */}
