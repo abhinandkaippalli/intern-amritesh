@@ -1,10 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import ProfileInfo from "../Cards/ProfileInfo"; 
 import { useNavigate } from "react-router-dom";
-import SearchBar from "../SearchBar/SearchBar"; 
 
 const Navbar = ({ userInfo }) => {
-  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
   const onLogout = () => {
@@ -12,27 +10,9 @@ const Navbar = ({ userInfo }) => {
     navigate("/login");
   };
 
-  const handleSearch = () => {
-    // Search logic here
-  };
-
-  const onClearSearch = () => {
-    setSearchQuery("");
-  };
-
   return (
     <div className="bg-white flex items-center justify-between px-6 drop-shadow py-4">
-      <h2 className="text-xl font-medium text-black">Notes</h2>
-      
-      {/* SearchBar should take up the available space */}
-      <div className="flex-1 mx-4">
-        <SearchBar
-          value={searchQuery}
-          onChange={({ target }) => setSearchQuery(target.value)}
-          handleSearch={handleSearch}
-          onClearSearch={onClearSearch}
-        />
-      </div>
+      <h2 className="text-xl font-bold text-blue-600">ObjectStream Inc</h2>
       
       {/* Render ProfileInfo only if userInfo is available */}
       {userInfo && (
