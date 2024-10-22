@@ -65,7 +65,33 @@ app.post("/create-account", async (req, res) => {
   });
 });
 
+app.get("/get-user", authenticateToken, async (req, res) => {
+  console.log(req.user);  // Log the decoded user info from the token
+  const userId = req.user.user._id;  // Extract _id from req.user.user
 
+  try {
+    const isUser = await User.findOne({ _id: userId });
+    if (!isUser) {
+      return res.status(401).json({ error: true, message: "User not found" });
+    }
+
+    return res.json({
+      user: {
+        fullName: isUser.fullName,
+        email: isUser.email,
+        _id: isUser._id,
+        createdOn: isUser.createdOn,
+      },
+      message: "User details retrieved successfully",
+    });
+  } catch (error) {
+    console.error("Error retrieving user details:", error);
+    return res.status(500).json({
+      error: true,
+      message: "Internal Server Error",
+    });
+  }
+});
 
 //login
 app.post("/login", async (req, res) => {
