@@ -1,106 +1,77 @@
+const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
-const config = require("./config.json");
 const mongoose = require("mongoose");
-
-
-mongoose.connect(config.connectionString);
 const bcrypt = require("bcryptjs");
-
-const User = require("./models/user.model");
-
-const express = require("express");
-const app = express();
-
 const jwt = require("jsonwebtoken");
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
+const User = require("./models/user.model");
 const { authenticateToken } = require("./utilities");
 
-app.use(express.json());
+const app = express();
+const config = require("./config.json");
 
-app.get("/", (req, res) => {
-  res.json({ data: "hlo" });
-});
+// MongoDB 
+mongoose.connect(config.connectionString);
 
 // Middleware
 app.use(express.json());
-app.use(cors({ origin: "*" }));
+app.use(cors({ origin: "*", credentials: true }));
 
-//signup
+//session
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, 
+  },
+  store: MongoStore.create({ mongoUrl: config.connectionString }), 
+}));
+
+app.get("/", (req, res) => {
+  res.json({ data: "API is running..." });
+});
+
+// Signup 
 app.post("/create-account", async (req, res) => {
   const { fullName, email, password } = req.body;
 
-  if (!fullName) {
-    return res.status(400).json({ error: true, message: "Full name required" });
+  if (!fullName || !email || !password) {
+    return res.status(400).json({ error: true, message: "All fields are required" });
   }
-  if (!email) {
-    return res.status(400).json({ error: true, message: "Email is required" });
-  }
-  if (!password) {
-    return res
-      .status(400)
-      .json({ error: true, message: "Password is required" });
-  }
+
   const isUser = await User.findOne({ email: email });
   if (isUser) {
-    return res.json({
-      error: true,
-      message: "User already exist",
-    });
+    return res.status(400).json({ error: true, message: "User already exists" });
   }
+
   const hashedPassword = await bcrypt.hash(password, 10);
-  const user = new User({
-    fullName,
-    email,
-    password,
-  });
+  const user = new User({ fullName, email, password: hashedPassword });
   await user.save();
-  const accessToken = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: "30m",
-  });
+
+  const accessToken = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "10m" });
+  const refreshToken = jwt.sign({ user }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+
+  req.session.refreshToken = refreshToken;
+
   return res.json({
     error: false,
     user,
     accessToken,
-    message: "Registration Successful",
+    refreshToken,
+    message: "Registration successful",
   });
 });
 
-app.get("/get-user", authenticateToken, async (req, res) => {
-  console.log(req.user);  // Log the decoded user info from the token
-  const userId = req.user.user._id;  // Extract _id from req.user.user
-
-  try {
-    const isUser = await User.findOne({ _id: userId });
-    if (!isUser) {
-      return res.status(401).json({ error: true, message: "User not found" });
-    }
-
-    return res.json({
-      user: {
-        fullName: isUser.fullName,
-        email: isUser.email,
-        _id: isUser._id,
-        createdOn: isUser.createdOn,
-      },
-      message: "User details retrieved successfully",
-    });
-  } catch (error) {
-    console.error("Error retrieving user details:", error);
-    return res.status(500).json({
-      error: true,
-      message: "Internal Server Error",
-    });
-  }
-});
-
-//login
+// Login 
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  if (!email) {
-    return res.status(400).json({ message: "Email is required" });
-  }
-  if (!password) {
-    return res.status(400).json({ message: "Password is required" });
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
   }
 
   const userInfo = await User.findOne({ email: email });
@@ -108,23 +79,49 @@ app.post("/login", async (req, res) => {
     return res.status(400).json({ message: "User not found" });
   }
 
-  if (password !== userInfo.password) {
+  const validPassword = await bcrypt.compare(password, userInfo.password);
+  if (!validPassword) {
     return res.status(400).json({ message: "Invalid password" });
   }
 
-  const accessToken = jwt.sign(
-    { user: userInfo },
-    process.env.ACCESS_TOKEN_SECRET,
-    {
-      expiresIn: "30m",
-    }
-  );
+  const accessToken = jwt.sign({ user: userInfo }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "10m" });
+  const refreshToken = jwt.sign({ user: userInfo }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+
+  req.session.refreshToken = refreshToken;
 
   return res.json({
     error: false,
     user: userInfo,
     accessToken,
+    refreshToken,
     message: "Login successful",
+  });
+});
+
+// Refresh Token 
+app.post("/refresh-token", (req, res) => {
+  const refreshToken = req.session.refreshToken;
+  if (!refreshToken) return res.status(403).json({ message: "No refresh token found in session" });
+
+  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ message: "Invalid refresh token" });
+
+    const newAccessToken = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "10m" });
+
+    res.json({
+      accessToken: newAccessToken,
+    });
+  });
+});
+
+// Logout 
+app.post("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ message: "Logout failed" });
+    }
+    res.clearCookie("connect.sid");
+    res.json({ message: "Logged out successfully" });
   });
 });
 
