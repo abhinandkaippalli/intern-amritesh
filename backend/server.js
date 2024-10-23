@@ -13,23 +13,35 @@ const app = express();
 const config = require("./config.json");
 
 // MongoDB 
-mongoose.connect(config.connectionString);
+mongoose.connect(config.connectionString, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 // Middleware
 app.use(express.json());
-app.use(cors({ origin: "*", credentials: true }));
 
-//session
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000, 
-  },
-  store: MongoStore.create({ mongoUrl: config.connectionString }), 
-}));
+// CORS with credentials (allow cookies)
+app.use(
+  cors({
+    origin: "http://localhost:5000", 
+    credentials: true, 
+  })
+);
+
+// Session 
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000,
+    },
+    store: MongoStore.create({ mongoUrl: config.connectionString }), 
+  })
+);
 
 app.get("/", (req, res) => {
   res.json({ data: "API is running..." });
@@ -55,7 +67,7 @@ app.post("/create-account", async (req, res) => {
   const accessToken = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "10m" });
   const refreshToken = jwt.sign({ user }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
 
-  req.session.refreshToken = refreshToken;
+  req.session.refreshToken = refreshToken; // Store refresh token in session
 
   return res.json({
     error: false,
@@ -100,7 +112,7 @@ app.post("/login", async (req, res) => {
 
 // Refresh Token 
 app.post("/refresh-token", (req, res) => {
-  const refreshToken = req.session.refreshToken;
+  const refreshToken = req.session.refreshToken; 
   if (!refreshToken) return res.status(403).json({ message: "No refresh token found in session" });
 
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
@@ -112,6 +124,20 @@ app.post("/refresh-token", (req, res) => {
       accessToken: newAccessToken,
     });
   });
+});
+
+// Get User 
+app.get("/get-user", authenticateToken, async (req, res) => {
+  const userId = req.user.user._id;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.json({ user });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
 });
 
 // Logout 
