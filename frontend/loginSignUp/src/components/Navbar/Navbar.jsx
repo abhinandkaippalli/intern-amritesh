@@ -22,7 +22,13 @@ const Navbar = ({ userInfo }) => {
 
       {userInfo && (
         <div className="flex items-center space-x-4">
-          <ProfileInfo userInfo={userInfo} onLogout={onLogout} />
+          <ProfileInfo userInfo={userInfo} />
+          <button
+            onClick={onLogout}
+            className="text-sm text-red-500 underline ml-4"
+          >
+            Logout
+          </button>
         </div>
       )}
     </div>

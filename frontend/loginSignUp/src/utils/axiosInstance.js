@@ -1,6 +1,5 @@
 import axios from "axios";
 import { BASE_URL } from "./constants";
-import { useNavigate } from "react-router-dom";
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -8,7 +7,7 @@ const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true, // Allow cookies
+  withCredentials: true,
 });
 
 axiosInstance.interceptors.request.use(
@@ -19,40 +18,36 @@ axiosInstance.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 axiosInstance.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    const navigate = useNavigate();
 
-    if (
-      error.response &&
-      error.response.status === 403 &&
-      !originalRequest._retry
-    ) {
+    if (error.response?.status === 401 && error.response?.data?.message === "Token expired" && !originalRequest._retry) {
       originalRequest._retry = true;
-
       try {
-        const { data } = await axiosInstance.post("/refresh-token");
+        const { data } = await axios.post(`${BASE_URL}/refresh-token`, {}, { withCredentials: true });
+        
         if (data.accessToken) {
           localStorage.setItem("token", data.accessToken);
-          originalRequest.headers[
-            "Authorization"
-          ] = `Bearer ${data.accessToken}`;
-          return axiosInstance(originalRequest); // Retry the original request
+          originalRequest.headers["Authorization"] = `Bearer ${data.accessToken}`;
+          return axiosInstance(originalRequest);
         }
-      } catch (err) {
+      } catch (refreshError) {
+        console.error("Refresh token expired or invalid. Redirecting to login...");
         localStorage.clear();
-        navigate("/login"); // Navigate to login page if token refresh fails
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
       }
+    } else if (error.response?.status === 403) {
+      console.error("Access forbidden or refresh token invalid. Redirecting to login...");
+      localStorage.clear();
+      window.location.href = "/login";
     }
+
     return Promise.reject(error);
   }
 );

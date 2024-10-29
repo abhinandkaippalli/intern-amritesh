@@ -1,7 +1,7 @@
 import React from "react";
 import { getInitials } from "../../utils/helper";
 
-const ProfileInfo = ({ userInfo, onLogout }) => {
+const ProfileInfo = ({ userInfo }) => {
   if (!userInfo) return null;
 
   return (
@@ -11,9 +11,6 @@ const ProfileInfo = ({ userInfo, onLogout }) => {
       </div>
       <div>
         <p className="text-sm font-medium">{userInfo.fullName || "No Name"}</p>
-        <button className="text-sm text-slate-700 underline" onClick={onLogout}>
-          Logout
-        </button>
       </div>
     </div>
   );

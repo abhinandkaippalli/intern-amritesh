@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const departmentSchema = new Schema({
@@ -7,4 +7,4 @@ const departmentSchema = new Schema({
   createdOn: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model('Department', departmentSchema);
+module.exports = mongoose.model("Department", departmentSchema);
