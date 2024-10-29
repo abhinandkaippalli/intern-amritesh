@@ -15,10 +15,10 @@ const Employee = require("./models/employee.model");
 const { authenticateToken, authorizeRole } = require("./utilities");
 
 const app = express();
-const config = require("./config.json");
+// const config = require("./config.json");
 
 // MongoDB Connection
-mongoose.connect(config.connectionString);
+mongoose.connect(process.env.MONGODB_CONNECT);
 
 // Middleware
 app.use(express.json());
@@ -28,7 +28,7 @@ app.use(
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    store: MongoStore.create({ mongoUrl: config.connectionString }),
+    store: MongoStore.create({ mongoUrl: process.env.MONGODB_CONNECT }),
     cookie: { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 },
   })
 );
