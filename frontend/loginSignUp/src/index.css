@@ -8,7 +8,7 @@
   html {
     font-family: "Poppins", "sans-serif";
   }
-  body {
+  body {  
     background-color: rgb(255, 255, 255);
     overflow-x: hidden;
   }
@@ -21,7 +21,7 @@
   .btn-primary {
     @apply w-full text-sm bg-primary text-white p-2 rounded my-1 hover:bg-blue-600;
   }
-  .icon-btn{
+  .icon-btn {
     @apply text-xl text-slate-300 cursor-pointer hover:text-primary;
   }
 }

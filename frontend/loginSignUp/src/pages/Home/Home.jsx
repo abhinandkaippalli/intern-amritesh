@@ -91,8 +91,9 @@ const Home = () => {
     scales: {
       y: {
         beginAtZero: true,
+        max: 50, // Set the maximum value to 50
         ticks: {
-          stepSize: 1, // Set the step size to 1 to show increments by 1.
+          stepSize: 5, // Set the step size to 5 for better visualization
           precision: 0, // Ensure only whole numbers are shown.
         },
       },
@@ -138,7 +139,7 @@ const Home = () => {
 
       <div
         className="flex-1 bg-white p-4 shadow-md rounded-md mb-4 flex items-center justify-center w-full"
-        style={{ height: "600px" }} // Adjusted the height to give more space for the chart
+        style={{ height: "65vh" }} // Adjusted the height to take up 65% of the viewport height
       >
         <div className="w-full h-full">
           <Bar data={employeeDepartmentData} options={chartOptions} />

@@ -1,7 +1,10 @@
 import React from "react";
 import { getInitials } from "../../utils/helper";
+import { useSelector } from "react-redux";
 
-const ProfileInfo = ({ userInfo }) => {
+const ProfileInfo = () => {
+  const userInfo = useSelector((state) => state.user.value);
+
   if (!userInfo) return null;
 
   return (
