@@ -15,6 +15,7 @@ const bookingSchema = new mongoose.Schema({
   paymentStatus: { type: Boolean, default: false },
   theater: { type: String },
   ticketType: { type: String, default: "M-Ticket" }, 
+  donation: { type: Number, default: 0 },
 });
 
 module.exports = mongoose.model("Booking", bookingSchema);

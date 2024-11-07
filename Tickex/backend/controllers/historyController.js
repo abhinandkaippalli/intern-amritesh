@@ -19,6 +19,7 @@ exports.getBookingHistory = async (req, res) => {
       seats: booking.seats,
       food: booking.food.map((item) => item.name),
       totalPrice: booking.totalPrice,
+      donation: booking.donation || 0, 
       paymentStatus: booking.paymentStatus,
       cancellationAvailable: true,
     }));

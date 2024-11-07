@@ -1,10 +1,10 @@
 const express = require("express");
 const { addFood } = require("../controllers/foodController");
-const Food = require("../models/Food"); 
-
+const Food = require("../models/Food");
 const auth = require("../middleware/authMiddleware");
 const router = express.Router();
 
+// Fetch all available food items
 router.get("/", async (req, res) => {
   try {
     const foodItems = await Food.find();
@@ -14,6 +14,7 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Add selected food items to a booking
 router.post("/add-to-booking", auth, addFood);
 
 module.exports = router;

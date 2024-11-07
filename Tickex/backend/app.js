@@ -9,6 +9,8 @@ const foodRoutes = require("./routes/foodRoutes");
 const historyRoutes = require("./routes/historyRoutes");
 const theaterRoutes = require("./routes/theaterRoutes");
 const adRoutes = require("./routes/adRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+const eventRoutes = require("./routes/eventRoutes");
 
 dotenv.config();
 connectDB();
@@ -22,8 +24,10 @@ app.use("/api/movies", movieRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/food", foodRoutes);
 app.use("/api/history", historyRoutes);
-app.use("/api/theaters", theaterRoutes);
+app.use("/api/cinemas", theaterRoutes);
 app.use("/api/ads", adRoutes);
+app.use("/api/payment", paymentRoutes);
+app.use("/api/events", eventRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

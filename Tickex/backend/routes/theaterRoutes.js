@@ -1,14 +1,7 @@
 const express = require("express");
-const Theater = require("../models/Theater");
+const { getCinemas } = require("../controllers/theaterController");
 const router = express.Router();
 
-router.get("/", async (req, res) => {
-  try {
-    const theaters = await Theater.find();
-    res.json(theaters);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch theaters" });
-  }
-});
+router.get("/", getCinemas);
 
 module.exports = router;
