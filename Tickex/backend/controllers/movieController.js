@@ -1,13 +1,13 @@
 const Movie = require("../models/Movie");
 
 exports.getMovies = async (req, res) => {
-  const { language, genre, format, is_premier } = req.query;
+  const { language, genre, format } = req.query;
   let filter = {};
 
   if (language) filter.languages = language;
   if (genre) filter.genres = genre;
   if (format) filter.formats = format;
-  if (is_premier !== undefined) filter.is_premier = is_premier; 
+
   try {
     const movies = await Movie.find(filter);
     res.json(movies);
@@ -24,6 +24,26 @@ exports.getMovieDetails = async (req, res) => {
     res.json(movie);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch movie details" });
+  }
+};
+
+exports.updateMovieRating = async (req, res) => {
+  const { movieId } = req.params;
+  const { rating } = req.body;
+
+  try {
+    const movie = await Movie.findById(movieId);
+    if (!movie) return res.status(404).json({ message: "Movie not found" });
+
+    const updatedRating =
+      (movie.rating * movie.ratingCount + rating) / (movie.ratingCount + 1);
+    movie.rating = updatedRating;
+    movie.ratingCount += 1;
+
+    await movie.save();
+    res.json({ message: "Rating updated successfully", rating: updatedRating });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update movie rating" });
   }
 };
 
@@ -51,25 +71,6 @@ exports.getShowtimeSeats = async (req, res) => {
     res.json(showtime.seats);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch seats for showtime" });
-  }
-};
-exports.updateMovieRating = async (req, res) => {
-  const { movieId } = req.params;
-  const { rating } = req.body;
-  try {
-    const movie = await Movie.findById(movieId);
-    if (!movie) return res.status(404).json({ message: "Movie not found" });
-
-    // Update rating based on new rating and increment count
-    const updatedRating =
-      (movie.rating * movie.ratingCount + rating) / (movie.ratingCount + 1);
-    movie.rating = updatedRating;
-    movie.ratingCount += 1;
-
-    await movie.save();
-    res.json({ message: "Rating updated successfully", rating: updatedRating });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to update movie rating" });
   }
 };
 
